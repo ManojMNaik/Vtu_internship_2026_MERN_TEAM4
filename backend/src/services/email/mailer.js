@@ -8,6 +8,7 @@ const transporter = hasSmtpConfig
       host: env.smtpHost,
       port: env.smtpPort,
       secure: env.smtpPort === 465,
+      connectionTimeout: 5000,
       auth: {
         user: env.smtpUser,
         pass: env.smtpPass,
@@ -16,17 +17,26 @@ const transporter = hasSmtpConfig
   : nodemailer.createTransport({ jsonTransport: true });
 
 export const sendEmail = async ({ to, subject, html, attachments }) => {
-  const info = await transporter.sendMail({
-    from: env.smtpFrom,
-    to,
-    subject,
-    html,
-    attachments,
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: env.smtpFrom,
+      to,
+      subject,
+      html,
+      attachments,
+    });
 
-  if (!hasSmtpConfig && env.nodeEnv !== "production") {
-    console.log("Email preview (dev json transport):", info.message);
+    if (!hasSmtpConfig && env.nodeEnv !== "production") {
+      console.log("Email preview (dev json transport):", info.message);
+    }
+
+    return info;
+  } catch (error) {
+    console.error("Email send failed:", {
+      to,
+      subject,
+      message: error?.message || "Unknown SMTP error",
+    });
+    throw error;
   }
-
-  return info;
 };
