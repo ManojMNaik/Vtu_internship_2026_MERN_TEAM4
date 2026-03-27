@@ -101,10 +101,10 @@ It supports three core roles:
 
 ### 📦 Booking & Billing
 
-* Full booking lifecycle
-* Status transitions
-* Bill generation
-* PDF export
+* Full booking lifecycle.
+* Status transitions.
+* Bill generation.
+* PDF export.
 
 ---
 
