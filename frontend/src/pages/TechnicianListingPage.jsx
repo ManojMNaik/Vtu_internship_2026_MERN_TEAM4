@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Briefcase, MapPin, Search, SlidersHorizontal, Star, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { City, State } from "country-state-city";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
 import { formatRatingDisplay, hasValidRating, getTechnicianReviewCount } from "@/utils/technicianUtils";
@@ -22,6 +23,7 @@ const loadingSkeletons = [1, 2, 3, 4];
 
 export default function TechnicianListingPage() {
   const [filters, setFilters] = useState({
+    state: "",
     city: "",
     service: "",
   });
@@ -30,8 +32,31 @@ export default function TechnicianListingPage() {
   const [error, setError] = useState("");
   const [technicians, setTechnicians] = useState([]);
   const [serviceCatalog, setServiceCatalog] = useState(predefinedServices);
+  const [stateCatalog, setStateCatalog] = useState([]);
+  const [cityCatalog, setCityCatalog] = useState([]);
   const [showServiceSuggestions, setShowServiceSuggestions] = useState(false);
+  const [showStateSuggestions, setShowStateSuggestions] = useState(false);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    const statesInIndia = State.getStatesOfCountry("IN").map((item) => item.name);
+    setStateCatalog(statesInIndia);
+  }, []);
+
+  useEffect(() => {
+    const selectedState = State.getStatesOfCountry("IN").find(
+      (item) => item.name.toLowerCase() === filters.state.trim().toLowerCase()
+    );
+
+    if (!selectedState) {
+      setCityCatalog([]);
+      return;
+    }
+
+    const citiesInState = City.getCitiesOfState("IN", selectedState.isoCode).map((item) => item.name);
+    setCityCatalog(citiesInState);
+  }, [filters.state]);
 
   useEffect(() => {
     const loadServices = async () => {
@@ -64,7 +89,12 @@ export default function TechnicianListingPage() {
   }, [sortBy, technicians]);
 
   const handleFilterChange = (name, value) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setFilters((prev) => {
+      if (name === "state" && value !== prev.state) {
+        return { ...prev, state: value, city: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const fetchTechnicians = async (searchFilters = filters) => {
@@ -72,6 +102,7 @@ export default function TechnicianListingPage() {
     setError("");
     try {
       const params = {};
+      if (searchFilters.state.trim()) params.state = searchFilters.state.trim();
       if (searchFilters.city.trim()) params.city = searchFilters.city.trim();
       if (searchFilters.service.trim()) params.service = searchFilters.service.trim();
       const response = await api.get("/technicians", { params });
@@ -91,14 +122,26 @@ export default function TechnicianListingPage() {
     fetchTechnicians(filters);
   };
 
+  const handleClearFilters = useCallback(() => {
+    const defaultFilters = { state: "", city: "", service: "" };
+    setFilters(defaultFilters);
+    setShowStateSuggestions(false);
+    setShowCitySuggestions(false);
+    setShowServiceSuggestions(false);
+    fetchTechnicians(defaultFilters);
+  }, []);
+
   const filteredServiceSuggestions = useMemo(() => {
     const query = filters.service.trim().toLowerCase();
     if (!query) return serviceCatalog;
     return serviceCatalog.filter((item) => item.toLowerCase().includes(query));
   }, [filters.service, serviceCatalog]);
 
+  const filteredStateSuggestions = useMemo(() => stateCatalog, [stateCatalog]);
+  const filteredCitySuggestions = useMemo(() => cityCatalog, [cityCatalog]);
+
   useEffect(() => {
-    fetchTechnicians({ city: "", service: "" });
+    fetchTechnicians({ state: "", city: "", service: "" });
   }, []);
 
   return (
@@ -106,7 +149,7 @@ export default function TechnicianListingPage() {
       <section className="mx-auto w-full max-w-6xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-primary sm:text-4xl">Find Technicians</h1>
-          <p className="mt-2 text-sm text-slate-600">Search by city and service, then sort results.</p>
+          <p className="mt-2 text-sm text-slate-600">Search by state, city and service, then sort results.</p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -114,15 +157,87 @@ export default function TechnicianListingPage() {
             <SlidersHorizontal className="h-4 w-4 text-accent" />
             Filters & Sorting
           </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto_auto]">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto_auto]">
+            <div className="relative flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              <input
+                className="w-full bg-transparent text-sm outline-none"
+                placeholder="State (India)"
+                value={filters.state}
+                readOnly
+                onFocus={() => {
+                  setShowStateSuggestions(true);
+                  setShowCitySuggestions(false);
+                }}
+                onClick={() => {
+                  setShowStateSuggestions(true);
+                  setShowCitySuggestions(false);
+                }}
+                onBlur={() => setTimeout(() => setShowStateSuggestions(false), 120)}
+              />
+              {showStateSuggestions && filteredStateSuggestions.length > 0 ? (
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                  {filteredStateSuggestions.map((stateName) => {
+                    const isSelected = filters.state.trim().toLowerCase() === stateName.toLowerCase();
+                    return (
+                      <button
+                        key={stateName}
+                        type="button"
+                        className={`w-full px-3 py-2 text-left text-sm transition ${
+                          isSelected ? "bg-primary/10 font-medium text-primary" : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                        onClick={() => {
+                          handleFilterChange("state", stateName);
+                          setShowStateSuggestions(false);
+                          setShowCitySuggestions(true);
+                        }}
+                      >
+                        {stateName}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+            <div className="relative flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
               <MapPin className="h-4 w-4 text-primary" />
               <input
                 className="w-full bg-transparent text-sm outline-none"
                 placeholder="City"
                 value={filters.city}
-                onChange={(event) => handleFilterChange("city", event.target.value)}
+                readOnly
+                onFocus={() => {
+                  setShowCitySuggestions(true);
+                  setShowStateSuggestions(false);
+                }}
+                onClick={() => {
+                  setShowCitySuggestions(true);
+                  setShowStateSuggestions(false);
+                }}
+                onBlur={() => setTimeout(() => setShowCitySuggestions(false), 120)}
               />
+              {showCitySuggestions && filteredCitySuggestions.length > 0 ? (
+                <div className="absolute left-0 top-full z-20 mt-2 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                  {filteredCitySuggestions.map((cityName) => {
+                    const isSelected = filters.city.trim().toLowerCase() === cityName.toLowerCase();
+                    return (
+                      <button
+                        key={cityName}
+                        type="button"
+                        className={`w-full px-3 py-2 text-left text-sm transition ${
+                          isSelected ? "bg-primary/10 font-medium text-primary" : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                        onClick={() => {
+                          handleFilterChange("city", cityName);
+                          setShowCitySuggestions(false);
+                        }}
+                      >
+                        {cityName}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
             <div className="relative flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
               <Search className="h-4 w-4 text-primary" />
@@ -157,6 +272,9 @@ export default function TechnicianListingPage() {
             </div>
             <Button type="button" variant="accent" onClick={handleSearch} disabled={loading}>
               {loading ? "Searching..." : "Search"}
+            </Button>
+            <Button type="button" variant="outline" onClick={handleClearFilters} disabled={loading}>
+              Clear Filters
             </Button>
             <select
               className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary"
