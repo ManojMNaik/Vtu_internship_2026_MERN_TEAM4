@@ -1,16 +1,14 @@
 import { CheckCircle2, Clock3, ShieldCheck, Star } from "lucide-react";
-import { getTechnicianRating } from "@/utils/technicianUtils";
+import { calculateAverageRating } from "@/utils/technicianUtils";
 
 export default function TrustStrip({ technicians }) {
   const totalTechnicians = technicians.length;
   const totalServicesCompleted = technicians.reduce((sum, item) => sum + Number(item?.completedJobs || 0), 0);
-  const avgRating = Number(
-    (technicians.reduce((sum, item) => sum + getTechnicianRating(item), 0) / Math.max(totalTechnicians, 1)).toFixed(1),
-  );
+  const avgRating = calculateAverageRating(technicians);
 
   const metrics = [
     { icon: CheckCircle2, text: `${Math.max(totalTechnicians, 1)}+ Verified Technicians` },
-    { icon: Star, text: `${avgRating} Avg Rating` },
+    { icon: Star, text: avgRating === null ? "No ratings yet" : `${avgRating} Avg Rating` },
     { icon: Clock3, text: "Quick Booking" },
     { icon: ShieldCheck, text: `${Math.max(totalServicesCompleted, 1)}+ Services Completed` },
   ];

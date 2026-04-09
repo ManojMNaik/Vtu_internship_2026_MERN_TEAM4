@@ -18,9 +18,12 @@ import TechnicianListingPage from "@/pages/TechnicianListingPage";
 import TechnicianProfilePage from "@/pages/TechnicianProfilePage";
 import UserBookingsPage from "@/pages/UserBookingsPage";
 import UserDashboardPage from "@/pages/UserDashboardPage";
+import UnauthorizedPage from "@/pages/UnauthorizedPage";
 import ProtectedRoute from "@/routes/ProtectedRoute";
+import { ROLES } from "@/config/rbac";
 
 export const routesConfig = [
+  // Public routes
   {
     path: "/",
     element: <AppLayout />,
@@ -31,6 +34,9 @@ export const routesConfig = [
   { path: "/reset-password", element: <ResetPasswordPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/verify-otp", element: <OtpVerificationPage /> },
+  { path: "/unauthorized", element: <UnauthorizedPage /> },
+
+  // Authenticated routes (any role)
   {
     element: <ProtectedRoute />,
     children: [
@@ -39,20 +45,22 @@ export const routesConfig = [
         children: [
           { path: "/dashboard", element: <DashboardRedirectPage /> },
           { path: "/profile", element: <CompleteProfilePage /> },
-          { path: "/technicians", element: <TechnicianListingPage /> },
-          { path: "/technician/:id", element: <TechnicianProfilePage /> },
-          { path: "/technicians/:id", element: <Navigate to="/technicians" replace /> },
           { path: "/complete-profile", element: <CompleteProfilePage /> },
         ],
       },
     ],
   },
+
+  // User-only routes
   {
-    element: <ProtectedRoute allowedRoles={["user"]} />,
+    element: <ProtectedRoute allowedRoles={[ROLES.USER]} />,
     children: [
       {
         element: <AppLayout />,
         children: [
+          { path: "/technicians", element: <TechnicianListingPage /> },
+          { path: "/technician/:id", element: <TechnicianProfilePage /> },
+          { path: "/technicians/:id", element: <Navigate to="/technicians" replace /> },
           { path: "/user/dashboard", element: <UserDashboardPage /> },
           { path: "/bookings", element: <UserBookingsPage /> },
           { path: "/bookings/new", element: <BookingCreatePage /> },
@@ -60,8 +68,10 @@ export const routesConfig = [
       },
     ],
   },
+
+  // Technician-only routes
   {
-    element: <ProtectedRoute allowedRoles={["technician"]} />,
+    element: <ProtectedRoute allowedRoles={[ROLES.TECHNICIAN]} />,
     children: [
       {
         element: <AppLayout />,
@@ -75,8 +85,10 @@ export const routesConfig = [
       },
     ],
   },
+
+  // Admin-only routes
   {
-    element: <ProtectedRoute allowedRoles={["admin"]} />,
+    element: <ProtectedRoute allowedRoles={[ROLES.ADMIN]} />,
     children: [
       {
         element: <AppLayout />,
@@ -84,5 +96,7 @@ export const routesConfig = [
       },
     ],
   },
+
+  // Catch-all redirect
   { path: "*", element: <Navigate to="/" replace /> },
 ];

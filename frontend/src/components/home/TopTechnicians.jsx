@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, Star } from "lucide-react";
+import { ArrowRight, MapPin, Star, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   getTechnicianCity,
   getTechnicianName,
-  getTechnicianRating,
   getTechnicianService,
   sortTechniciansByRating,
+  formatRatingDisplay,
+  hasValidRating,
 } from "@/utils/technicianUtils";
 
 export default function TopTechnicians({ technicians }) {
@@ -26,7 +27,8 @@ export default function TopTechnicians({ technicians }) {
           {topTechnicians.map((tech, index) => {
             const name = getTechnicianName(tech);
             const serviceName = getTechnicianService(tech);
-            const rating = getTechnicianRating(tech);
+            const ratingDisplay = formatRatingDisplay(tech);
+            const isNew = !hasValidRating(tech);
             const city = getTechnicianCity(tech);
             const avatar = tech?.user?.avatarUrl || "";
             return (
@@ -53,7 +55,16 @@ export default function TopTechnicians({ technicians }) {
                 </div>
                 <div className="mt-4 space-y-2 text-sm text-slate-600">
                   <p className="inline-flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-current text-amber-500" /> {rating.toFixed(1)}
+                    {isNew ? (
+                      <>
+                        <Sparkles className="h-4 w-4 text-emerald-500" />
+                        <span className="font-medium text-emerald-600">{ratingDisplay}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Star className="h-4 w-4 fill-current text-amber-500" /> {ratingDisplay}
+                      </>
+                    )}
                   </p>
                   <p className="inline-flex items-center gap-1">
                     <MapPin className="h-4 w-4 ml-2 text-slate-400" /> {city}

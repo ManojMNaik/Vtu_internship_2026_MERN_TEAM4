@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Briefcase, CheckCircle2, Clock3, FolderKanban, Star, Wrench } from "lucide-react";
+import { Briefcase, CheckCircle2, Clock3, FolderKanban, Star, Wrench, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/services/api";
+import { formatRatingDisplay, hasValidRating } from "@/utils/technicianUtils";
 
 const statusClassMap = {
   pending: "bg-amber-100 text-amber-700",
@@ -58,13 +59,15 @@ export default function TechnicianWorkspacePage() {
     const totalBookings = bookings.length;
     const pendingBookings = bookings.filter((item) => normalizeStatus(item.status) === "pending").length;
     const completedJobs = bookings.filter((item) => normalizeStatus(item.status) === "completed").length;
-    const ratingValue = Number(technicianProfile?.avgRating ?? technicianProfile?.averageRating ?? 0);
+    const isNew = !hasValidRating(technicianProfile);
+    const ratingDisplay = formatRatingDisplay(technicianProfile);
 
     return {
       totalBookings,
       pendingBookings,
       completedJobs,
-      rating: Number.isFinite(ratingValue) ? ratingValue.toFixed(1) : "0.0",
+      rating: ratingDisplay,
+      isNew,
     };
   }, [bookings, technicianProfile]);
 
@@ -125,7 +128,7 @@ export default function TechnicianWorkspacePage() {
             { label: "Total Bookings", value: stats.totalBookings, icon: Briefcase },
             { label: "Pending Bookings", value: stats.pendingBookings, icon: Clock3 },
             { label: "Completed Jobs", value: stats.completedJobs, icon: CheckCircle2 },
-            { label: "Rating", value: stats.rating, icon: Star },
+            { label: "Rating", value: stats.rating, icon: stats.isNew ? Sparkles : Star, isNew: stats.isNew },
           ].map((item) => (
             <motion.article
               key={item.label}
@@ -134,11 +137,11 @@ export default function TechnicianWorkspacePage() {
             >
               <div className="flex h-full flex-col justify-between">
                 <div className="flex-1">
-                  <item.icon className="h-5 w-5 text-accent" />
+                  <item.icon className={`h-5 w-5 ${item.isNew ? 'text-emerald-500' : 'text-accent'}`} />
                   <p className="mt-3 text-sm text-slate-500">{item.label}</p>
                 </div>
                 <div className="mt-4">
-                  <p className="text-2xl font-bold text-primary">{item.value}</p>
+                  <p className={`text-2xl font-bold ${item.isNew ? 'text-emerald-600' : 'text-primary'}`}>{item.value}</p>
                 </div>
               </div>
             </motion.article>

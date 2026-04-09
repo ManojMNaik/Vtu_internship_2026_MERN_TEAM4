@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Briefcase, MapPin, Star } from "lucide-react";
+import { Briefcase, MapPin, Star, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/services/api";
+import { formatRatingDisplay, hasValidRating, getTechnicianReviewCount } from "@/utils/technicianUtils";
 
 export default function TechnicianProfilePage() {
   const { id } = useParams();
@@ -46,7 +47,9 @@ export default function TechnicianProfilePage() {
     );
   }
 
-  const rating = technician.avgRating || technician.averageRating || 0;
+  const ratingDisplay = formatRatingDisplay(technician);
+  const isNew = !hasValidRating(technician);
+  const reviewCount = getTechnicianReviewCount(technician);
   const name = technician?.user?.fullName || "Technician";
   const location = [technician?.location?.city, technician?.location?.state, technician?.location?.country]
     .filter(Boolean)
@@ -69,9 +72,15 @@ export default function TechnicianProfilePage() {
                 {location || "Location not provided"}
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-600">
-              <Star className="h-3.5 w-3.5 fill-current" /> {Number(rating).toFixed(1)}
-            </span>
+            {isNew ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                <Sparkles className="h-3.5 w-3.5" /> {ratingDisplay}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-600" title={`${reviewCount} review${reviewCount !== 1 ? 's' : ''}`}>
+                <Star className="h-3.5 w-3.5 fill-current" /> {ratingDisplay}
+              </span>
+            )}
           </div>
 
           <div className="mt-5">

@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Briefcase, MapPin, Search, SlidersHorizontal, Star } from "lucide-react";
+import { Briefcase, MapPin, Search, SlidersHorizontal, Star, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api";
+import { formatRatingDisplay, hasValidRating, getTechnicianReviewCount } from "@/utils/technicianUtils";
 
 const sortOptions = [
   { value: "rating_desc", label: "Rating: High to Low" },
@@ -53,7 +54,13 @@ export default function TechnicianListingPage() {
     if (sortBy === "experience_desc") {
       return list.sort((a, b) => (b.experienceYears || 0) - (a.experienceYears || 0));
     }
-    return list.sort((a, b) => (b.avgRating || b.averageRating || 0) - (a.avgRating || a.averageRating || 0));
+    return list.sort((a, b) => {
+      const aHasRating = hasValidRating(a);
+      const bHasRating = hasValidRating(b);
+      if (aHasRating && !bHasRating) return -1;
+      if (!aHasRating && bHasRating) return 1;
+      return (b.avgRating || b.averageRating || 0) - (a.avgRating || a.averageRating || 0);
+    });
   }, [sortBy, technicians]);
 
   const handleFilterChange = (name, value) => {
@@ -68,7 +75,7 @@ export default function TechnicianListingPage() {
       if (searchFilters.city.trim()) params.city = searchFilters.city.trim();
       if (searchFilters.service.trim()) params.service = searchFilters.service.trim();
       const response = await api.get("/technicians", { params });
-      const results = response?.data || [];
+      const results = Array.isArray(response?.data) ? response.data : [];
       setTechnicians(results);
     } catch (apiError) {
       const errorMessage = apiError?.message || "Failed to load technicians.";
@@ -190,7 +197,9 @@ export default function TechnicianListingPage() {
                 ))
               : null}
             {sortedTechnicians.map((technician, index) => {
-              const rating = technician.avgRating || technician.averageRating || 0;
+              const ratingDisplay = formatRatingDisplay(technician);
+              const isNew = !hasValidRating(technician);
+              const reviewCount = getTechnicianReviewCount(technician);
               const profileName = technician?.user?.fullName || "Technician";
               const city = technician?.location?.city || "-";
               const serviceNames = Array.isArray(technician.services)
@@ -211,9 +220,15 @@ export default function TechnicianListingPage() {
                       <h3 className="text-lg font-semibold text-slate-900">{profileName}</h3>
                       <p className="mt-1 text-sm text-slate-600">{city}</p>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600">
-                      <Star className="h-3.5 w-3.5 fill-current" /> {Number(rating).toFixed(1)}
-                    </span>
+                    {isNew ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-600">
+                        <Sparkles className="h-3.5 w-3.5" /> {ratingDisplay}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600" title={`${reviewCount} review${reviewCount !== 1 ? 's' : ''}`}>
+                        <Star className="h-3.5 w-3.5 fill-current" /> {ratingDisplay}
+                      </span>
+                    )}
                   </div>
 
                   <div className="mt-4 space-y-2 text-sm text-slate-600">

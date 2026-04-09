@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useRoutes } from "react-router-dom";
 import { BrowserRouter } from "react-router-dom";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import HelpWidget from "@/components/common/HelpWidget";
 import { routesConfig } from "@/routes";
 
 function AppRoutes() {
@@ -32,6 +33,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppRoutes />
+      <HelpWidget />
     </BrowserRouter>
   );
 }
