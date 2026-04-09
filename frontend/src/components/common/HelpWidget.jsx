@@ -518,34 +518,33 @@ export default function HelpWidget() {
 
       {/* Help Panel - Backdrop and Panel as separate motion elements */}
       <AnimatePresence mode="sync">
-        {isOpen && (
-          <>
-            {/* Backdrop - fixed position, separate from panel */}
-            <motion.div
-              key="help-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={handleClose}
-              className={cn(
-                "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm",
-                shouldBlockInteraction ? "pointer-events-auto" : "pointer-events-none"
-              )}
-            />
+        {isOpen ? (
+          <motion.div
+            key="help-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={handleClose}
+            className={cn(
+              "fixed inset-0 z-50 bg-black/30 backdrop-blur-sm",
+              shouldBlockInteraction ? "pointer-events-auto" : "pointer-events-none"
+            )}
+          />
+        ) : null}
 
-            {/* Help Panel - fixed position */}
-            <motion.div
-              key="help-panel"
-              initial={{ opacity: 0, x: 400 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 400 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={cn(
-                "fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col",
-                shouldBlockInteraction ? "pointer-events-auto" : "pointer-events-none"
-              )}
-            >
+        {isOpen ? (
+          <motion.div
+            key="help-panel"
+            initial={{ opacity: 0, x: 400 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 400 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={cn(
+              "fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col",
+              shouldBlockInteraction ? "pointer-events-auto" : "pointer-events-none"
+            )}
+          >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-primary text-white">
                 <div className="flex items-center gap-3">
@@ -638,9 +637,8 @@ export default function HelpWidget() {
                   </button>
                 </p>
               </div>
-            </motion.div>
-          </>
-        )}
+          </motion.div>
+        ) : null}
       </AnimatePresence>
     </>
   );
