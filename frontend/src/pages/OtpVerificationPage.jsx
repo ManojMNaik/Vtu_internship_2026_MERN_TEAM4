@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthNavbar from "@/components/common/AuthNavbar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/services/api";
 
 const maskEmail = (value) => {
   if (!value || !value.includes("@")) return value;
@@ -22,7 +23,36 @@ export default function OtpVerificationPage() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const resolvedEmail = (stateEmail || fallbackEmail).trim();
+
+  const startCooldown = useCallback(() => {
+    setCooldown(60);
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) { clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const handleResendOtp = async () => {
+    if (!resolvedEmail) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+    setResending(true);
+    try {
+      await api.post("/auth/resend-otp", { email: resolvedEmail });
+      toast.success("OTP resent to your email");
+      startCooldown();
+    } catch (apiError) {
+      toast.error(apiError?.message || "Failed to resend OTP.");
+    } finally {
+      setResending(false);
+    }
+  };
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -36,7 +66,7 @@ export default function OtpVerificationPage() {
     setLoading(true);
     try {
       await verifyOtp({ email: resolvedEmail, otp }, navigate);
-      toast.success("Account verified successfully 🚀");
+      toast.success("Account verified successfully!");
     } catch (apiError) {
       const errorMessage = apiError?.message || "Invalid OTP. Please try again.";
       setError(errorMessage);
@@ -79,7 +109,21 @@ export default function OtpVerificationPage() {
             {loading ? "Verifying..." : "Verify & Continue"}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            className="text-sm font-medium text-accent hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handleResendOtp}
+            disabled={resending || cooldown > 0}
+          >
+            {resending
+              ? "Resending..."
+              : cooldown > 0
+                ? `Resend OTP in ${cooldown}s`
+                : "Didn't get the code? Resend OTP"}
+          </button>
+        </div>
+        <p className="mt-3 text-center text-sm text-slate-600">
           Need an account?{" "}
           <Link className="font-semibold text-accent" to="/signup">
             Sign up

@@ -53,37 +53,59 @@ export const signup = asyncHandler(async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
   const existingUser = await User.findOne({ email: normalizedEmail });
-  if (existingUser) {
-    console.warn("[auth.signup] Duplicate email", { email: normalizedEmail });
+
+  if (existingUser && existingUser.isVerified) {
     throw new AppError("User already exists", 409);
   }
 
+  let user = existingUser;
+
   try {
-    const user = await User.create({
-      fullName: resolvedFullName,
-      email: normalizedEmail,
-      password,
-      role,
-      isVerified: false,
+    if (existingUser && !existingUser.isVerified) {
+      existingUser.fullName = resolvedFullName;
+      existingUser.password = password;
+      existingUser.role = role;
+      await existingUser.save();
+      user = existingUser;
+    } else {
+      user = await User.create({
+        fullName: resolvedFullName,
+        email: normalizedEmail,
+        password,
+        role,
+        isVerified: false,
+      });
+    }
+  } catch (dbError) {
+    console.error("[auth.signup] DB error", {
+      message: dbError.message,
+      code: dbError.code,
     });
+    if (dbError?.code === 11000) {
+      throw new AppError("User already exists", 409);
+    }
+    throw new AppError("Unable to create account right now.", 500);
+  }
 
-    const code = createOtpCode();
-    const expiresAt = new Date(Date.now() + env.otpExpiryMinutes * 60 * 1000);
+  const code = createOtpCode();
+  const expiresAt = new Date(Date.now() + env.otpExpiryMinutes * 60 * 1000);
 
-    await OTP.deleteMany({
-      email: user.email,
-      purpose: "email_verification",
-      isUsed: false,
-    });
+  await OTP.deleteMany({
+    email: user.email,
+    purpose: "email_verification",
+    isUsed: false,
+  });
 
-    await OTP.create({
-      user: user._id,
-      email: user.email,
-      code,
-      purpose: "email_verification",
-      expiresAt,
-    });
+  await OTP.create({
+    user: user._id,
+    email: user.email,
+    code,
+    purpose: "email_verification",
+    expiresAt,
+  });
 
+  let emailSent = true;
+  try {
     await sendEmail({
       to: user.email,
       subject: "ServiceMate - Verify your email",
@@ -93,22 +115,21 @@ export const signup = asyncHandler(async (req, res) => {
         expiryMinutes: env.otpExpiryMinutes,
       }),
     });
-
-    res.status(201).json({
-      success: true,
-      message: "OTP sent to email",
+  } catch (emailError) {
+    emailSent = false;
+    console.error("[auth.signup] Email delivery failed, user can resend OTP", {
+      email: user.email,
+      error: emailError.message,
     });
-  } catch (dbError) {
-    console.error("[auth.signup] DB error", {
-      message: dbError.message,
-      code: dbError.code,
-      name: dbError.name,
-    });
-    if (dbError?.code === 11000) {
-      throw new AppError("User already exists", 409);
-    }
-    throw new AppError(dbError.message || "Unable to create account right now.", 400);
   }
+
+  res.status(201).json({
+    success: true,
+    message: emailSent
+      ? "OTP sent to email"
+      : "Account created. Email delivery delayed — please use Resend OTP.",
+    emailSent,
+  });
 });
 
 export const verifyOtp = asyncHandler(async (req, res) => {
@@ -261,15 +282,26 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     expiresAt,
   });
 
-  await sendEmail({
-    to: user.email,
-    subject: "ServiceMate - Password Reset OTP",
-    html: otpEmailTemplate({
-      fullName: user.fullName,
-      otpCode: code,
-      expiryMinutes: env.otpExpiryMinutes,
-    }),
-  });
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "ServiceMate - Password Reset OTP",
+      html: otpEmailTemplate({
+        fullName: user.fullName,
+        otpCode: code,
+        expiryMinutes: env.otpExpiryMinutes,
+      }),
+    });
+  } catch (emailError) {
+    console.error("[auth.forgotPassword] Email delivery failed", {
+      email: user.email,
+      error: emailError.message,
+    });
+    throw new AppError(
+      "OTP created but email delivery failed. Please try again in a moment.",
+      503,
+    );
+  }
 
   res.status(200).json({
     success: true,
@@ -317,6 +349,73 @@ export const verifyResetOtp = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "OTP verified",
+  });
+});
+
+export const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new AppError("Email is required.", 400);
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail });
+  if (!user) {
+    throw new AppError("User not found.", 404);
+  }
+  if (user.isVerified) {
+    throw new AppError("Account is already verified.", 400);
+  }
+
+  const recentOtp = await OTP.findOne({
+    user: user._id,
+    purpose: "email_verification",
+    isUsed: false,
+    createdAt: { $gt: new Date(Date.now() - 60 * 1000) },
+  });
+  if (recentOtp) {
+    throw new AppError("Please wait at least 60 seconds before requesting a new OTP.", 429);
+  }
+
+  const code = createOtpCode();
+  const expiresAt = new Date(Date.now() + env.otpExpiryMinutes * 60 * 1000);
+
+  await OTP.deleteMany({
+    email: user.email,
+    purpose: "email_verification",
+    isUsed: false,
+  });
+
+  await OTP.create({
+    user: user._id,
+    email: user.email,
+    code,
+    purpose: "email_verification",
+    expiresAt,
+  });
+
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: "ServiceMate - Verify your email",
+      html: otpEmailTemplate({
+        fullName: user.fullName,
+        otpCode: code,
+        expiryMinutes: env.otpExpiryMinutes,
+      }),
+    });
+  } catch (emailError) {
+    console.error("[auth.resendOtp] Email delivery failed", {
+      email: user.email,
+      error: emailError.message,
+    });
+    throw new AppError("Email delivery failed. Please try again in a moment.", 503);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "OTP resent to email",
   });
 });
 

@@ -38,9 +38,7 @@ app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp());
 
-if (env.nodeEnv === "development") {
-  app.use(morgan("dev"));
-}
+app.use(morgan(env.nodeEnv === "production" ? "combined" : "dev"));
 
 app.use("/api/v1", routes);
 app.get("/", (req, res) => {
