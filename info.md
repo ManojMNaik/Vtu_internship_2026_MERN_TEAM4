@@ -548,7 +548,7 @@ npm run build  # Production build
 
 ### Default Admin Account
 - Email: `admin@servicemate.com`
-- Password: `12345678`
+- Password: `FindIt`
 
 ---
 
