@@ -1,5 +1,6 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath, ROLES } from "@/config/rbac";
@@ -9,20 +10,22 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Memoize user role
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
   const userRole = useMemo(() => user?.role || ROLES.GUEST, [user?.role]);
-
-  // Memoize dashboard path based on role
   const dashboardPath = useMemo(() => getDashboardPath(userRole), [userRole]);
 
-  // Memoize dashboard label
   const dashboardLabel = useMemo(() => {
     if (userRole === ROLES.TECHNICIAN) return "Workspace";
     return "Dashboard";
   }, [userRole]);
 
   const onLogout = useCallback(() => {
+    setMobileOpen(false);
     logout(navigate);
   }, [logout, navigate]);
 
@@ -33,34 +36,28 @@ export default function Navbar() {
     [isActive]
   );
 
-  // Memoized nav items based on role
   const navItems = useMemo(() => {
     if (!isAuthenticated) return [];
 
     const items = [];
 
-    // Home - accessible to users and admins
     if (userRole !== ROLES.TECHNICIAN) {
       items.push({ path: "/", label: "Home" });
     }
 
-    // Dashboard/Workspace - all authenticated
     items.push({ path: dashboardPath, label: dashboardLabel });
 
-    // User-specific items
     if (userRole === ROLES.USER) {
       items.push({ path: "/technicians", label: "Browse Services" });
       items.push({ path: "/bookings", label: "My Bookings" });
     }
 
-    // Technician-specific items
     if (userRole === ROLES.TECHNICIAN) {
       items.push({ path: "/technician/bookings", label: "Bookings" });
       items.push({ path: "/technician/services", label: "Services" });
       items.push({ path: "/technician/portfolio", label: "Portfolio" });
     }
 
-    // Profile - all authenticated
     items.push({ path: "/profile", label: "Profile" });
 
     return items;
@@ -74,31 +71,43 @@ export default function Navbar() {
         </Link>
 
         {isAuthenticated ? (
-          <div className="flex items-center gap-2 sm:gap-3">
-            {navItems.map((item) => (
-              <Button
-                key={item.path}
-                asChild
-                variant="outline"
-                size="sm"
-                className={navButtonClass(item.path)}
-              >
-                <Link to={item.path}>{item.label}</Link>
-              </Button>
-            ))}
+          <>
+            {/* Desktop nav */}
+            <div className="hidden items-center gap-2 md:flex md:gap-3">
+              {navItems.map((item) => (
+                <Button
+                  key={item.path}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className={navButtonClass(item.path)}
+                >
+                  <Link to={item.path}>{item.label}</Link>
+                </Button>
+              ))}
 
-            {/* User avatar */}
-            <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 sm:flex">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
-                {(user?.fullName || "U").trim().charAt(0).toUpperCase()}
+              <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 lg:flex">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
+                  {(user?.fullName || "U").trim().charAt(0).toUpperCase()}
+                </div>
+                <span className="max-w-24 truncate text-sm text-slate-700">{user?.fullName || "User"}</span>
               </div>
-              <span className="max-w-24 truncate text-sm text-slate-700">{user?.fullName || "User"}</span>
+
+              <Button variant="accent" size="sm" onClick={onLogout}>
+                Logout
+              </Button>
             </div>
 
-            <Button variant="accent" size="sm" onClick={onLogout}>
-              Logout
-            </Button>
-          </div>
+            {/* Mobile hamburger */}
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-lg p-2 text-slate-700 hover:bg-slate-100 md:hidden"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+            >
+              {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </>
         ) : (
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
@@ -110,6 +119,36 @@ export default function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* Mobile drawer */}
+      {isAuthenticated && mobileOpen && (
+        <div className="border-t border-slate-200 bg-white px-4 pb-4 pt-3 md:hidden">
+          <div className="flex items-center gap-3 pb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
+              {(user?.fullName || "U").trim().charAt(0).toUpperCase()}
+            </div>
+            <span className="truncate text-sm font-medium text-slate-700">{user?.fullName || "User"}</span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+                  isActive(item.path)
+                    ? "bg-primary/10 text-primary"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+            <Button variant="accent" size="sm" className="mt-2 w-full" onClick={onLogout}>
+              Logout
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

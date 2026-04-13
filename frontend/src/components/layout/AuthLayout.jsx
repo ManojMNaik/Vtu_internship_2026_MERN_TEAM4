@@ -40,9 +40,9 @@ export default function AuthLayout({ title, subtitle, children }) {
   return (
     <main className="relative min-h-screen bg-slate-50">
       <AuthNavbar />
-      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px] items-center justify-center p-6 md:p-8">
+      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px] items-center justify-center px-4 py-6 sm:p-6 md:p-8">
         <div className="grid w-full max-w-[1200px] overflow-hidden rounded-3xl bg-white shadow-2xl lg:min-h-[70vh] lg:max-h-[85vh] lg:grid-cols-2">
-          <section className="relative overflow-hidden bg-gradient-to-br from-[#1E3A8A] via-[#2563EB] to-[#3B82F6] p-8 text-white sm:p-10 lg:flex lg:flex-col lg:justify-between lg:p-12">
+          <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#1E3A8A] via-[#2563EB] to-[#3B82F6] p-8 text-white sm:p-10 lg:flex lg:flex-col lg:justify-between lg:p-12">
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute left-16 top-16 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute bottom-20 right-20 h-52 w-52 rounded-full bg-[#F97316]/25 blur-3xl" />
@@ -71,7 +71,7 @@ export default function AuthLayout({ title, subtitle, children }) {
             </div>
           </section>
 
-          <section className="flex items-center justify-center bg-slate-50 px-5 py-10 sm:px-8 sm:pb-8">
+          <section className="flex items-center justify-center bg-slate-50 px-4 py-8 sm:px-8 sm:pb-8 sm:pt-10">
             <motion.div
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}

@@ -16,7 +16,7 @@ export default function TopTechnicians({ technicians }) {
 
   return (
     <section className="py-16">
-      <div className="mx-auto w-full max-w-7xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-3xl font-bold text-[#1E3A8A]">Top Technicians</h2>
           <Link to="/technicians" className="inline-flex items-center text-sm font-semibold text-[#F97316]">

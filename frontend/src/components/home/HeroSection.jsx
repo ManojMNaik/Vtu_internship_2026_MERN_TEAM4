@@ -22,12 +22,12 @@ export default function HeroSection() {
 
   return (
     <section className="py-16">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 lg:grid-cols-2 lg:items-center">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:items-center">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
           <span className="inline-flex items-center rounded-full bg-[#1E3A8A]/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-[#1E3A8A]">
             Premium Home Services
           </span>
-          <h1 className="mt-4 text-4xl font-bold leading-tight text-[#1E3A8A] sm:text-5xl">
+          <h1 className="mt-4 text-3xl font-bold leading-tight text-[#1E3A8A] sm:text-4xl md:text-5xl">
             Book Trusted Home Services in Minutes
           </h1>
           <p className="mt-4 max-w-xl text-lg text-slate-600">Verified professionals for AC, Plumbing, Electrical & more</p>

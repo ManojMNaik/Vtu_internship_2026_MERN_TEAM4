@@ -90,7 +90,7 @@ export default function TechnicianWorkspacePage() {
     .toUpperCase();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-orange-50 px-6 py-10">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-orange-50 px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl space-y-8">
         <motion.section
           variants={sectionVariants}
@@ -102,7 +102,7 @@ export default function TechnicianWorkspacePage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm text-slate-500">Workspace</p>
-              <h1 className="text-3xl font-bold text-primary sm:text-4xl">Welcome back, {user?.fullName || "Technician"}</h1>
+              <h1 className="text-2xl font-bold text-primary sm:text-3xl md:text-4xl">Welcome back, {user?.fullName || "Technician"}</h1>
               <p className="mt-2 text-slate-600">Manage bookings, services and grow your business</p>
               {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
             </div>
@@ -276,10 +276,10 @@ export default function TechnicianWorkspacePage() {
             <div className="mt-4 flex-1 space-y-3">
               {topServices.length > 0 ? (
                 topServices.map((service) => (
-                  <div key={service._id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
-                    <div>
+                  <div key={service._id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+                    <div className="min-w-0 flex-1">
                       <p className="font-medium text-slate-800">{service.serviceName}</p>
-                      <p className="text-sm text-slate-500">{service.description || "No description"}</p>
+                      <p className="truncate text-sm text-slate-500">{service.description || "No description"}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-accent">₹{service.price ?? 0}</span>

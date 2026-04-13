@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 export default function MainCta() {
   return (
     <section className="py-16">
-      <div className="mx-auto w-full max-w-7xl px-6">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-10 py-12 shadow-md">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-10 shadow-md sm:px-10 sm:py-12">
           <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
           <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>

@@ -92,7 +92,7 @@ export default function TechnicianServicesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow">
           <h1 className="text-2xl font-bold text-primary">Manage Services</h1>
@@ -102,7 +102,7 @@ export default function TechnicianServicesPage() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow">
-          <form className="grid gap-3 md:grid-cols-[1fr_1.5fr_140px_auto]" onSubmit={submitService}>
+          <form className="grid gap-3 sm:grid-cols-2 md:grid-cols-[1fr_1.5fr_140px_auto]" onSubmit={submitService}>
             <div className="relative">
               <input
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"

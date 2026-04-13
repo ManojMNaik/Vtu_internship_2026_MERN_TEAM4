@@ -152,7 +152,7 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow">
           <div className="flex items-center justify-between">

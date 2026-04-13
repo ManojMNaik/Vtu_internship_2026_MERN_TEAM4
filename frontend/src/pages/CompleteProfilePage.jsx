@@ -152,7 +152,7 @@ export default function CompleteProfilePage() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+      <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-lg sm:p-8">
         <h1 className="text-2xl font-bold text-primary">{hasExistingProfile ? "Update Profile" : "Complete Profile"}</h1>
         <p className="mt-1 text-sm text-slate-500">
           {hasExistingProfile ? "Review and update your profile details." : "Add your location to continue."}

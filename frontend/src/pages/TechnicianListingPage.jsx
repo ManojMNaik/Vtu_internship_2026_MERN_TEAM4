@@ -157,7 +157,7 @@ export default function TechnicianListingPage() {
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-orange-50 px-4 py-10 text-slate-900 sm:px-6">
       <section className="mx-auto w-full max-w-6xl">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-primary sm:text-4xl">Find Technicians</h1>
+          <h1 className="text-2xl font-bold text-primary sm:text-3xl md:text-4xl">Find Technicians</h1>
           <p className="mt-2 text-sm text-slate-600">Search by state, city and service, then sort results.</p>
         </div>
 

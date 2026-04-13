@@ -21,7 +21,7 @@ function UserHome() {
       <WhyChooseUs />
       {loading ? (
         <section className="py-16">
-          <div className="mx-auto w-full max-w-7xl px-6">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
               Loading top technicians...
             </div>
@@ -44,7 +44,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-orange-50 text-slate-900">
       {isTechnician ? (
         <section className="py-16">
-          <div className="mx-auto w-full max-w-7xl px-6">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
               <h1 className="text-2xl font-bold text-primary">Technician workspace moved</h1>
               <p className="mt-2 text-slate-600">Use your new unified workspace to manage bookings, services, and portfolio.</p>

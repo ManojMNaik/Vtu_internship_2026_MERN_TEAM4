@@ -39,7 +39,7 @@ const serviceCards = [
 export default function PopularServices() {
   return (
     <section className="py-16">
-      <div className="mx-auto w-full max-w-7xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <h2 className="mb-8 text-3xl font-bold text-[#1E3A8A]">Popular Services</h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {serviceCards.map((item, index) => (

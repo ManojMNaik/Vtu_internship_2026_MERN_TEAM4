@@ -15,7 +15,7 @@ export default function TrustStrip({ technicians }) {
 
   return (
     <section className="py-16">
-      <div className="mx-auto w-full max-w-7xl px-6">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-center text-lg font-semibold text-slate-900">Trusted by customers across India</p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

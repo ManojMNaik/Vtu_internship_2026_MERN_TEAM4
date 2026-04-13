@@ -4,7 +4,7 @@ import logo from "@/assets/logo.png";
 export default function StartupFooter() {
   return (
     <footer className="border-t border-slate-200 bg-white">
-      <div className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 sm:py-14 md:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
         <div>
           <img src={logo} alt="ServiceMate" className="h-10 w-auto object-contain" />
           <p className="mt-3 text-sm text-slate-500">Trusted home services at your doorstep</p>
