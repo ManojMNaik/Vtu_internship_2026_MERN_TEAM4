@@ -1,15 +1,20 @@
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
+import AboutPage from "@/pages/AboutPage";
+import ContactPage from "@/pages/ContactPage";
 import HomePage from "@/pages/HomePage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import BookingCreatePage from "@/pages/BookingCreatePage";
 import CompleteProfilePage from "@/pages/CompleteProfilePage";
 import DashboardRedirectPage from "@/pages/DashboardRedirectPage";
+import HelpCenterPage from "@/pages/HelpCenterPage";
 import LoginPage from "@/pages/LoginPage";
 import OtpVerificationPage from "@/pages/OtpVerificationPage";
+import PrivacyPage from "@/pages/PrivacyPage";
 import SignupPage from "@/pages/SignupPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import TermsPage from "@/pages/TermsPage";
 import TechnicianBookingsPage from "@/pages/TechnicianBookingsPage";
 import TechnicianServicesPage from "@/pages/TechnicianServicesPage";
 import TechnicianPortfolioPage from "@/pages/TechnicianPortfolioPage";
@@ -27,7 +32,14 @@ export const routesConfig = [
   {
     path: "/",
     element: <AppLayout />,
-    children: [{ index: true, element: <HomePage /> }],
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "about", element: <AboutPage /> },
+      { path: "terms", element: <TermsPage /> },
+      { path: "privacy", element: <PrivacyPage /> },
+      { path: "help", element: <HelpCenterPage /> },
+      { path: "contact", element: <ContactPage /> },
+    ],
   },
   { path: "/login", element: <LoginPage /> },
   { path: "/forgot-password", element: <ForgotPasswordPage /> },

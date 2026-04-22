@@ -13,9 +13,8 @@ export default function StartupFooter() {
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-800">Company</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-500">
-            <li><a className="hover:text-[#1E3A8A]" href="#">About Us</a></li>
-            <li><a className="hover:text-[#1E3A8A]" href="#">Careers</a></li>
-            <li><a className="hover:text-[#1E3A8A]" href="#">Contact</a></li>
+            <li><Link className="hover:text-[#1E3A8A]" to="/about">About Us</Link></li>
+            <li><Link className="hover:text-[#1E3A8A]" to="/contact">Contact</Link></li>
           </ul>
         </div>
 
@@ -32,9 +31,9 @@ export default function StartupFooter() {
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-800">Support</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-500">
-            <li><a className="hover:text-[#1E3A8A]" href="#">Help Center</a></li>
-            <li><a className="hover:text-[#1E3A8A]" href="#">Terms of Service</a></li>
-            <li><a className="hover:text-[#1E3A8A]" href="#">Privacy Policy</a></li>
+            <li><Link className="hover:text-[#1E3A8A]" to="/help">Help Center</Link></li>
+            <li><Link className="hover:text-[#1E3A8A]" to="/terms">Terms of Service</Link></li>
+            <li><Link className="hover:text-[#1E3A8A]" to="/privacy">Privacy Policy</Link></li>
           </ul>
         </div>
 
