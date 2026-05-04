@@ -5,13 +5,25 @@ const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 const MAX_RETRIES = 2;
 const TIMEOUT_MS = 5000;
 
+const getApiKey = () => {
+  const key = env.brevoApiKey || process.env.BREVO_API_KEY || "";
+  return key.trim();
+};
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const sendEmail = async ({ to, subject, html, attachments }) => {
+  const apiKey = getApiKey();
+
+  if (!apiKey) {
+    console.error("[Brevo Email Error] BREVO_API_KEY is missing or empty. Email not sent.", { to, subject });
+    return null;
+  }
+
   const body = {
     sender: {
-      name: env.brevoSenderName,
-      email: env.brevoSenderEmail,
+      name: (env.brevoSenderName || process.env.BREVO_SENDER_NAME || "ServiceMate").trim(),
+      email: (env.brevoSenderEmail || process.env.BREVO_SENDER_EMAIL || "").trim(),
     },
     to: [{ email: to }],
     subject,
@@ -31,9 +43,9 @@ export const sendEmail = async ({ to, subject, html, attachments }) => {
     try {
       const { data } = await axios.post(BREVO_API_URL, body, {
         headers: {
-          "api-key": env.brevoApiKey,
-          "Content-Type": "application/json",
-          Accept: "application/json",
+          "api-key": apiKey,
+          "content-type": "application/json",
+          accept: "application/json",
         },
         timeout: TIMEOUT_MS,
       });
