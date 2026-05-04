@@ -1,3 +1,4 @@
+import axios from "axios";
 import { env } from "../../config/env.js";
 
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
@@ -6,8 +7,8 @@ const TIMEOUT_MS = 5000;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const buildBrevoPayload = ({ to, subject, html, attachments }) => {
-  const payload = {
+export const sendEmail = async ({ to, subject, html, attachments }) => {
+  const body = {
     sender: {
       name: env.brevoSenderName,
       email: env.brevoSenderEmail,
@@ -18,7 +19,7 @@ const buildBrevoPayload = ({ to, subject, html, attachments }) => {
   };
 
   if (attachments?.length) {
-    payload.attachment = attachments.map((att) => ({
+    body.attachment = attachments.map((att) => ({
       name: att.filename,
       content: Buffer.isBuffer(att.content)
         ? att.content.toString("base64")
@@ -26,38 +27,18 @@ const buildBrevoPayload = ({ to, subject, html, attachments }) => {
     }));
   }
 
-  return payload;
-};
-
-export const sendEmail = async ({ to, subject, html, attachments }) => {
-  const payload = buildBrevoPayload({ to, subject, html, attachments });
-
   for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-      const response = await fetch(BREVO_API_URL, {
-        method: "POST",
+      const { data } = await axios.post(BREVO_API_URL, body, {
         headers: {
           "api-key": env.brevoApiKey,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
+        timeout: TIMEOUT_MS,
       });
 
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => ({}));
-        throw new Error(
-          `Brevo API ${response.status}: ${errorBody.message || response.statusText}`,
-        );
-      }
-
-      return await response.json();
+      return data;
     } catch (error) {
       const isLastAttempt = attempt > MAX_RETRIES;
 
@@ -67,6 +48,7 @@ export const sendEmail = async ({ to, subject, html, attachments }) => {
           subject,
           attempt,
           message: error.message,
+          response: error.response?.data,
         });
         return null;
       }
